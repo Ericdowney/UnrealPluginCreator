@@ -1,0 +1,24 @@
+# Compiled binaries
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# User-specific files
+*.user
+*.userprefs
+*.sln
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.VC.opendb
+
+# Mac OS hidden files
+.DS_Store
+
+# Windows hidden files
+Thumbs.db
+
+# Logs
+*.log

@@ -1,0 +1,35 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "<PLUGIN_NAME>",
+	"Description": "<PLUGIN_DESCRIPTION>",
+	"Category": "<PLUGIN_CATEGORY>",
+	"CreatedBy": "<PLUGIN_AUTHOR>",
+	"CreatedByURL": "<PLUGIN_AUTHOR_URL>",
+	"DocsURL": "<PLUGIN_DOCS_URL>",
+	"MarketplaceURL": "<PLUGIN_MARKETPLACE_URL>",
+	"SupportURL": "<PLUGIN_SUPPORT_URL>",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "<PLUGIN_NAME>",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+          {
+            "Name": "<PLUGIN_NAME>Editor",
+            "Type": "Editor",
+            "LoadingPhase": "Default"
+        },
+		{
+			"Name": "<PLUGIN_NAME>Tests",
+			"Type": "Editor",
+			"LoadingPhase": "Default",
+			"EnabledByDefault": true
+		}
+	]
+}
