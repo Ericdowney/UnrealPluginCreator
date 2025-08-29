@@ -5,13 +5,12 @@
 # ------------------------------------------
 
 TEMPLATE_DIR="./__TEMPLATE"
+YEAR=$(date +"%Y")
 
-# ANSI codes for styling
 BOLD="\033[1m"
 RESET="\033[0m"
 RED="\033[0;31m"
 
-# Function to display help
 function show_help() {
     echo -e "${BOLD}Usage:${RESET} $0 --output-dir <directory> [--help] [--defaults]"
     echo ""
@@ -37,7 +36,39 @@ function show_help() {
     exit 0
 }
 
-# ---- Parse CLI arguments ----
+# Replace placeholders in all files
+function replace_placeholders() {
+    local file="$1"
+    LC_ALL=C sed -i "" "s|<PLUGIN_NAME>|$PLUGIN_NAME|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_AUTHOR>|$PLUGIN_AUTHOR|g" "$file"
+    LC_ALL=C sed -i "" "s|<YEAR>|$YEAR|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_DESCRIPTION>|$PLUGIN_DESCRIPTION|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_CATEGORY>|$PLUGIN_CATEGORY|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_AUTHOR_URL>|$PLUGIN_AUTHOR_URL|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_DOCS_URL>|$PLUGIN_DOCS_URL|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_MARKETPLACE_URL>|$PLUGIN_MARKETPLACE_URL|g" "$file"
+    LC_ALL=C sed -i "" "s|<PLUGIN_SUPPORT_URL>|$PLUGIN_SUPPORT_URL|g" "$file"
+}
+
+function rename_plugin_paths() {
+    local base="$1"
+    # Directories Only
+    find "$base" -type d -name "*PLUGIN_NAME*" | while read -r path; do
+        new_path=$(echo "$path" | sed "s|PLUGIN_NAME|$PLUGIN_NAME|g")
+        mv "$path" "$new_path"
+    done
+
+    # Files Only
+    find "$base" -type f -name "*PLUGIN_NAME*" | while read -r path; do
+        new_path=$(echo "$path" | sed "s|PLUGIN_NAME|$PLUGIN_NAME|g")
+        mv "$path" "$new_path"
+    done
+}
+
+# ------------------------------------------
+# ---- Parse CLI arguments -----------------
+# ------------------------------------------
+
 DEFAULTS=false
 OUTPUT_DIR=""
 
@@ -75,7 +106,10 @@ if [ -z "$OUTPUT_DIR" ]; then
     show_help
 fi
 
-# ---- Collect Input ----
+# ------------------------------------------
+# ---- Collect Input Values ----------------
+# ------------------------------------------
+
 echo ""
 echo "=============================="
 echo ""
@@ -117,43 +151,26 @@ else
     PLUGIN_SUPPORT_URL=""
 fi
 
-# Year
-YEAR=$(date +"%Y")
-
 # Destination
-DEST_DIR="${OUTPUT_DIR%/}/$PLUGIN_NAME"  # Ensure no trailing slash in OUTPUT_DIR
+DEST_DIR="${OUTPUT_DIR%/}/$PLUGIN_NAME"
 
-# ---- Copy Template ----
+# ------------------------------------------
+# ---- Copy Template -----------------------
+# ------------------------------------------
+
 cp -R "$TEMPLATE_DIR" "$DEST_DIR"
 
-# ---- Replace Placeholders in all files ----
-function replace_placeholders() {
-    local file="$1"
-    LC_ALL=C sed -i "" "s|<PLUGIN_NAME>|$PLUGIN_NAME|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_AUTHOR>|$PLUGIN_AUTHOR|g" "$file"
-    LC_ALL=C sed -i "" "s|<YEAR>|$YEAR|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_DESCRIPTION>|$PLUGIN_DESCRIPTION|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_CATEGORY>|$PLUGIN_CATEGORY|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_AUTHOR_URL>|$PLUGIN_AUTHOR_URL|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_DOCS_URL>|$PLUGIN_DOCS_URL|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_MARKETPLACE_URL>|$PLUGIN_MARKETPLACE_URL|g" "$file"
-    LC_ALL=C sed -i "" "s|<PLUGIN_SUPPORT_URL>|$PLUGIN_SUPPORT_URL|g" "$file"
-}
+# ------------------------------------------
+# ---- Replace values in files -------------
+# ------------------------------------------
 
-# Recursively process files
 find "$DEST_DIR" -type f | while read -r file; do
     replace_placeholders "$file"
 done
 
-# ---- Rename directories and files containing PLUGIN_NAME ----
-function rename_plugin_paths() {
-    local base="$1"
-    find "$base" -depth -name "*PLUGIN_NAME*" | while read -r path; do
-        new_path=$(echo "$path" | sed "s|PLUGIN_NAME|$PLUGIN_NAME|g")
-        mkdir -p "$(dirname "$new_path")"
-        mv "$path" "$new_path"
-    done
-}
+# ------------------------------------------
+# ---- Rename directories and files --------
+# ------------------------------------------
 
 rename_plugin_paths "$DEST_DIR"
 

@@ -7,8 +7,6 @@
 // Public Functions
 
 void S<PLUGIN_NAME>EditorWidget::Construct(const FArguments& InArgs) {
-    StartRefreshTicker();
-    
     ChildSlot
     [
         SNew(SVerticalBox)
