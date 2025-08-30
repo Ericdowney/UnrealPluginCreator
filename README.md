@@ -35,13 +35,13 @@ cd UnrealPluginCreator
 ### macOS / Linux
 
 ```bash
-./CreateUnrealPlugin.sh --output-dir <path/to/directory>
+./UnrealPluginCreator.sh --output-dir <path/to/directory>
 ```
 
 ### Windows
 
 ```bat
-CreateUnrealPlugin.bat --output-dir <path/to/directory>
+UnrealPluginCreator.bat --output-dir <path/to/directory>
 ```
 
 ### Options
