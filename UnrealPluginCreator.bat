@@ -10,6 +10,9 @@ set "DEFAULTS=false"
 set "OUTPUT_DIR="
 set "TEMPLATE_DIR=__TEMPLATE"
 
+:: Parse arguments
+call :parse_args %*
+
 :: -----------------------------
 :: Helper: Show Help
 :: -----------------------------
@@ -71,24 +74,25 @@ goto loop
 if "%OUTPUT_DIR%"=="" (
     echo Error: --output-dir is required.
     call :show_help
+    exit /b 1
 )
 
 :: -----------------------------
 :: Collect Wizard Input
 :: -----------------------------
 echo.
-echo 🛠 Welcome to UnrealPluginCreator!
+echo Welcome to UnrealPluginCreator!
 echo This wizard will scaffold your Unreal Engine plugin.
 echo.
 
 :: Required
 :prompt_plugin_name
 set /p PLUGIN_NAME="Plugin Name (required): "
-if "%PLUGIN_NAME%"=="" goto prompt_plugin_name
+if "!PLUGIN_NAME!"=="" goto prompt_plugin_name
 
 :prompt_plugin_author
 set /p PLUGIN_AUTHOR="Plugin Author (required): "
-if "%PLUGIN_AUTHOR%"=="" goto prompt_plugin_author
+if "!PLUGIN_AUTHOR!"=="" goto prompt_plugin_author
 
 :: Optional
 if "%DEFAULTS%"=="false" (
@@ -117,36 +121,41 @@ set "DEST_DIR=%OUTPUT_DIR%\%PLUGIN_NAME%"
 :: -----------------------------
 :: Copy Template
 :: -----------------------------
+if not exist "%TEMPLATE_DIR%" (
+    echo ❌ Error: Template directory "%TEMPLATE_DIR%" not found.
+    exit /b 1
+)
+
 xcopy "%TEMPLATE_DIR%" "%DEST_DIR%" /E /I /Y >nul
 
 :: -----------------------------
 :: Replace placeholders using PowerShell
 :: -----------------------------
 for /R "%DEST_DIR%" %%F in (*) do (
-    powershell -Command "(gc '%%F') -replace '<PLUGIN_NAME>', '%PLUGIN_NAME%' `
-                            -replace '<PLUGIN_AUTHOR>', '%PLUGIN_AUTHOR%' `
-                            -replace '<YEAR>', '%YEAR%' `
-                            -replace '<PLUGIN_DESCRIPTION>', '%PLUGIN_DESCRIPTION%' `
-                            -replace '<PLUGIN_CATEGORY>', '%PLUGIN_CATEGORY%' `
-                            -replace '<PLUGIN_AUTHOR_URL>', '%PLUGIN_AUTHOR_URL%' `
-                            -replace '<PLUGIN_DOCS_URL>', '%PLUGIN_DOCS_URL%' `
-                            -replace '<PLUGIN_MARKETPLACE_URL>', '%PLUGIN_MARKETPLACE_URL%' `
-                            -replace '<PLUGIN_SUPPORT_URL>', '%PLUGIN_SUPPORT_URL%' | Out-File -Encoding UTF8 '%%F'"
+    powershell -ExecutionPolicy Bypass -File "ReplacePlaceholders.ps1" ^
+        -FilePath "%%F" ^
+        -PluginName "!PLUGIN_NAME!" ^
+        -PluginAuthor "!PLUGIN_AUTHOR!" ^
+        -Year "!YEAR!" ^
+        -PluginDescription "!PLUGIN_DESCRIPTION!" ^
+        -PluginCategory "!PLUGIN_CATEGORY!" ^
+        -PluginAuthorURL "!PLUGIN_AUTHOR_URL!" ^
+        -PluginDocsURL "!PLUGIN_DOCS_URL!" ^
+        -PluginMarketplaceURL "!PLUGIN_MARKETPLACE_URL!" ^
+        -PluginSupportURL "!PLUGIN_SUPPORT_URL!"
 )
 
 :: -----------------------------
 :: Rename files and directories containing PLUGIN_NAME
 :: -----------------------------
-:: Using PowerShell for safer renaming
-powershell -Command "
-Get-ChildItem -Path '%DEST_DIR%' -Recurse -Depth 5 -Force | Sort-Object FullName -Descending | ForEach-Object {
-    if ($_.Name -like '*PLUGIN_NAME*') {
-        $newName = $_.FullName -replace 'PLUGIN_NAME', '%PLUGIN_NAME%'
-        Rename-Item -Path $_.FullName -NewName $newName -Force
-    }
-}
-"
+powershell -ExecutionPolicy Bypass -File "RenamePluginItems.ps1" ^
+    -RootPath "!DEST_DIR!" ^
+    -PluginName "!PLUGIN_NAME!"
 
+:: -----------------------------
+:: Final Message
+:: -----------------------------
 echo.
-echo ✅ Plugin '%PLUGIN_NAME%' created successfully in %DEST_DIR%
+echo Plugin '!PLUGIN_NAME!' created successfully in !DEST_DIR!
 echo You can now open it in Unreal Engine!
+start "" "!DEST_DIR!"
